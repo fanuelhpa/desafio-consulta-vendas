@@ -1,9 +1,15 @@
 package com.devsuperior.dsmeta.services;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.devsuperior.dsmeta.dto.SaleSellerDTO;
+import com.devsuperior.dsmeta.dto.TotalSalesSellerSummaryDTO;
+import com.devsuperior.dsmeta.projections.TotalSalesSellerSummaryProjection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,13 +31,48 @@ public class SaleService {
 		return new SaleMinDTO(entity);
 	}
 
-    public Page<SaleSellerDTO> searchSalesSellersByMinMaxDateName(String minDate, String maxDate, String partialName, Pageable pageable) {
+    public Page<SaleSellerDTO> searchReport(String minDate, String maxDate, String partialName, Pageable pageable) {
 
-        LocalDate minDateObj = LocalDate.parse(minDate);
-        LocalDate maxDateObj = LocalDate.parse(maxDate);
+        LocalDate minDateObj;
+        LocalDate maxDateObj;
 
-        Page<Sale> sales = repository.searchSalesSellers(minDateObj, maxDateObj, partialName, pageable);
+        if(maxDate.isEmpty()) {
+            maxDateObj = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+        } else {
+            maxDateObj = LocalDate.parse(maxDate);
+        }
+
+        if(minDate.isEmpty()) {
+            minDateObj = maxDateObj.minusYears(1L);
+        } else {
+            minDateObj = LocalDate.parse(minDate);
+        }
+
+        Page<Sale> sales = repository.searchReportByDateName(minDateObj, maxDateObj, partialName, pageable);
         Page<SaleSellerDTO> pageDto = sales.map(x -> new SaleSellerDTO(x));
         return pageDto;
+    }
+
+    public List<TotalSalesSellerSummaryDTO> searchSummary(String minDate, String maxDate) {
+
+        LocalDate minDateObj;
+        LocalDate maxDateObj;
+
+        if(maxDate.isEmpty()) {
+            maxDateObj = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+        } else {
+            maxDateObj = LocalDate.parse(maxDate);
+        }
+
+        if(minDate.isEmpty()) {
+            minDateObj = maxDateObj.minusYears(1L);
+        } else {
+            minDateObj = LocalDate.parse(minDate);
+        }
+
+        List<TotalSalesSellerSummaryProjection> list = repository.searchSalesSummaryByDate(minDateObj, maxDateObj);
+        List<TotalSalesSellerSummaryDTO> listDto = list.stream().map(x -> new TotalSalesSellerSummaryDTO(x)).collect(Collectors.toList());
+
+        return listDto;
     }
 }
