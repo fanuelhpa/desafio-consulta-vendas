@@ -29,7 +29,16 @@ public class Sale {
 	public Sale() {
 	}
 
-	public Long getId() {
+    public Sale(Seller seller, LocalDate date, Double amount, Integer deals, Integer visited, Long id) {
+        this.seller = seller;
+        this.date = date;
+        this.amount = amount;
+        this.deals = deals;
+        this.visited = visited;
+        this.id = id;
+    }
+
+    public Long getId() {
 		return id;
 	}
 

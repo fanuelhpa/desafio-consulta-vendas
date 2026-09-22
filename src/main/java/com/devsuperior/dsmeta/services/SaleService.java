@@ -1,8 +1,12 @@
 package com.devsuperior.dsmeta.services;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
+import com.devsuperior.dsmeta.dto.SaleSellerDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.devsuperior.dsmeta.dto.SaleMinDTO;
@@ -20,4 +24,14 @@ public class SaleService {
 		Sale entity = result.get();
 		return new SaleMinDTO(entity);
 	}
+
+    public Page<SaleSellerDTO> searchSalesSellersByMinMaxDateName(String minDate, String maxDate, String partialName, Pageable pageable) {
+
+        LocalDate minDateObj = LocalDate.parse(minDate);
+        LocalDate maxDateObj = LocalDate.parse(maxDate);
+
+        Page<Sale> sales = repository.searchSalesSellers(minDateObj, maxDateObj, partialName, pageable);
+        Page<SaleSellerDTO> pageDto = sales.map(x -> new SaleSellerDTO(x));
+        return pageDto;
+    }
 }
